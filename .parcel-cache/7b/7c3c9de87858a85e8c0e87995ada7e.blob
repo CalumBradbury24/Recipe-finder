@@ -1,0 +1,15 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+class ResultsView extends _viewJsDefault.default {
+    _parentElement = document.querySelector('.results');
+    _errorMessage = 'No recipes found for your query! Please try again.';
+    _message = '';
+    _generateMarkup() {
+        console.log(this._data);
+        return this._data.map((result)=>`<li class="preview">\n                <a class="preview__link" href="#${result.recipeID}">\n                    <figure class="preview__fig">\n                        <img src="${result.image}" alt="${result.title}" />\n                    </figure>\n                    <div class="preview__data">\n                        <h4 class="preview__title">${result.title}</h4>\n                        <p class="preview__publisher">${result.publisher}</p>\n                    </div>\n                </a>\n            </li>`
+        ).join('');
+    }
+}
+exports.default = new ResultsView(); //exporting the instance means there can only ever be one instance of this class created (singleton class)

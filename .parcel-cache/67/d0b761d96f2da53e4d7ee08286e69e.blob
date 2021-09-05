@@ -1,0 +1,26 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getJSON", ()=>getJSON
+);
+var _config = require("./config");
+const timeout = function(s) {
+    return new Promise(function(_, reject) {
+        setTimeout(function() {
+            reject(new Error(`Request took too long! Timeout after ${s} second`));
+        }, s * 1000);
+    });
+};
+const getJSON = async (url)=>{
+    try {
+        const res = await Promise.race([
+            fetch(url),
+            timeout(_config.TIMEOUT_SECONDS)
+        ]); //Promise.race resolves as soon as one of the promises settles (which ever resolves/rejects first)
+        const data = await res.json()//Fetch doesnt automatically parse json into a javascript object 
+        ;
+        if (!res.ok) throw new Error(`${data.message} (${res.status})`); //If request is unsuccessful
+        return data;
+    } catch (err) {
+        throw err; //Causes this promise (from getJSON function) to reject
+    }
+};

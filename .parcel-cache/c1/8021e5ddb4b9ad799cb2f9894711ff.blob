@@ -1,0 +1,41 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class View {
+    _data;
+    render(data) {
+        if (!data || Array.isArray(data) && !data.length) return this.renderError();
+        this._data = data;
+        const markup = this._generateMarkup();
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); //afterbegin = insert just inside the element, before its first child.
+    }
+    update(data) {
+        if (!data || Array.isArray(data) && !data.length) return this.renderError();
+        this._data = data;
+        const newMarkup = this._generateMarkup();
+        const newDom = document.createRange().createContextualFragment(newMarkup); //Convert the html into a new DOM object (similar to a virtual dom)
+        const newElements = newDom.querySelectorAll('*');
+        console.log(newElements);
+    }
+    _clear() {
+        this._parentElement.innerHTML = '';
+    }
+    renderSpinner() {
+        const markup = ` \n            <div class="spinner">\n                <svg>\n                    <use href="${_iconsSvgDefault.default}#icon-loader"></use>\n                </svg>\n            </div>`;
+        this._parentElement.innerHTML = ''; //Clear element
+        this._parentElement.insertAdjacentHTML('afterbegin', markup);
+    }
+    renderError(message = this._errorMessage) {
+        const markup = `<div class="error">\n                            <div>\n                                <svg>\n                                    <use href="${_iconsSvgDefault.default}#icon-alert-triangle"></use>\n                                </svg>\n                            </div>\n                            <p${message}</p>\n                        </div>`;
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); //afterbegin = insert just inside the element, before its first child.
+    }
+    renderMessage(message = this._message) {
+        const markup = `<div class="recipe">\n                            <div class="message">\n                            <div>\n                                <svg>\n                                <use href="${_iconsSvgDefault.default}#icon-smile"></use>\n                                </svg>\n                            </div>\n                            <p>${message}</p>\n                        </div>`;
+        this._clear();
+        this._parentElement.insertAdjacentHTML('afterbegin', markup); //afterbegin = insert just inside the element, before its first child.
+    }
+}
+exports.default = View;

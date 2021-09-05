@@ -1,0 +1,62 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _modelJs = require("./model.js");
+var _recipeView = require("./views/recipeView");
+var _recipeViewDefault = parcelHelpers.interopDefault(_recipeView);
+var _searchView = require("./views/searchView");
+var _searchViewDefault = parcelHelpers.interopDefault(_searchView);
+var _resultsViewJs = require("./views/resultsView.js");
+var _resultsViewJsDefault = parcelHelpers.interopDefault(_resultsViewJs);
+var _paginationViewJs = require("./views/paginationView.js");
+var _paginationViewJsDefault = parcelHelpers.interopDefault(_paginationViewJs);
+var _stable = require("core-js/stable");
+var _runtime = require("regenerator-runtime/runtime");
+// https://forkify-api.herokuapp.com/v2
+//Presentation logic in views
+//Application logic in controller
+//Controller calls api methods etc on model
+// automatically update modules in the browser at runtime without needing a whole page refresh
+if (module.hot) module.hot.accept(); //Parcel
+//Controls recipes being rendered on screen
+const controlRecipes = async ()=>{
+    try {
+        const id = window.location.hash.slice(1); //get hash from current url (removing '#' from start)
+        if (!id) return;
+        //1 Loading recipe
+        _recipeViewDefault.default.renderSpinner();
+        await _modelJs.loadRecipe(id);
+        //2 Rendering recipe
+        _recipeViewDefault.default.render(_modelJs.state.recipe);
+    } catch (err) {
+        console.log(err);
+        _recipeViewDefault.default.renderError();
+        alert(err); //Catches the error thrown in the try block
+    }
+};
+//controls the search results in the search results bar
+const controlSearchResults = async ()=>{
+    try {
+        _resultsViewJsDefault.default.renderSpinner();
+        //Get search value entered by user
+        const query = _searchViewDefault.default.getQuery();
+        if (!query) return;
+        //Get results
+        await _modelJs.loadSearchResults(query); //Loads results into state (which is imported into here from model.js)
+        //render results
+        console.log(_modelJs.state.search.results);
+        _resultsViewJsDefault.default.render(_modelJs.getSearchResultsPage());
+        //render initial paginatoin buttons
+        _paginationViewJsDefault.default.render(_modelJs.state.search);
+    } catch (err) {
+        console.log(err);
+        alert(err); //Catches the error thrown in the try block
+    }
+};
+const controlPagination = (goToPage)=>{
+};
+//Publisher-Subscriber pattern
+const init = ()=>{
+    _recipeViewDefault.default.addHandlerRender(controlRecipes);
+    _searchViewDefault.default.addHandlerSearch(controlSearchResults);
+    _paginationViewJsDefault.default.addHandlerClick(controlPagination);
+};
+init();

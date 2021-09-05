@@ -1,0 +1,15 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class SearchView {
+    #parentEl = document.querySelector('.search');
+    getQuery() {
+        return this.#parentEl.querySelector('.search__field').value; //Get text in search field
+    }
+    addHandlerSearch(handler) {
+        this.#parentEl.addEventListener('submit', (e)=>{
+            e.preventDefault();
+            handler(); //Call the controlSearchResults function that is passed in
+        });
+    }
+}
+exports.default = new SearchView;

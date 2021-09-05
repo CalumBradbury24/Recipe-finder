@@ -1,0 +1,12 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+class ResultsView extends _viewJsDefault.default {
+    _parentElement = document.querySelector('.results');
+    _generateMarkup() {
+        return this._data.map(()=>`<li class="preview">\n                <a class="preview__link" href="#23456">\n                    <figure class="preview__fig">\n                        <img src="src/img/test-1.jpg" alt="Test" />\n                    </figure>\n                    <div class="preview__data">\n                        <h4 class="preview__name">\n                            Pasta with Tomato Cream ...\n                        </h4>\n                        <p class="preview__publisher">The Pioneer Woman</p>\n                    </div>\n                </a>\n            </li>`
+        ).join('');
+    }
+}
+exports.default = new ResultsView(); //exporting the instance means there can only ever be one instance of this class created (singleton class)
