@@ -1,0 +1,16 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./View.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _previewViewJs = require("./previewView.js");
+var _previewViewJsDefault = parcelHelpers.interopDefault(_previewViewJs);
+class ResultsView extends _viewJsDefault.default {
+    _parentElement = document.querySelector('.results');
+    _errorMessage = 'No recipes found for your query! Please try again.';
+    _generateMarkup() {
+        const id = window.location.hash.slice(1); //Get everything from the hash except the first element
+        return this._data.map((result)=>_previewViewJsDefault.default.render(result, false)
+        ).join('');
+    }
+}
+exports.default = new ResultsView(); //exporting the instance means there can only ever be one instance of this class created (singleton class)

@@ -1,0 +1,106 @@
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "state", ()=>state
+);
+parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe
+);
+parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults
+);
+parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage
+);
+parcelHelpers.export(exports, "updateServings", ()=>updateServings
+);
+parcelHelpers.export(exports, "addBookmark", ()=>addBookmark
+);
+parcelHelpers.export(exports, "deleteBookmark", ()=>deleteBookmark
+);
+var _config = require("./config");
+var _helpers = require("./helpers");
+const state = {
+    recipe: {
+    },
+    search: {
+        query: '',
+        results: [],
+        resultsPerPage: _config.RESULTS_PER_PAGE,
+        page: 1
+    },
+    bookmarks: []
+};
+const loadRecipe = async (recipeID)=>{
+    try {
+        const data = await _helpers.getJSON(`${_config.API_URL}${recipeID}`);
+        const { recipe  } = data.data;
+        state.recipe = {
+            recipeID: recipe.id,
+            title: recipe.title,
+            publisher: recipe.publisher,
+            sourceUrl: recipe.source_url,
+            image: recipe.image_url,
+            servings: recipe.servings,
+            cookingTime: recipe.cooking_time,
+            ingredients: recipe.ingredients
+        };
+        if (state.bookmarks.some((bookmark)=>bookmark.id === recipeID
+        )) state.recipe.bookmarked = true;
+        else state.recipe.bookmarked = false;
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+};
+const loadSearchResults = async (query)=>{
+    try {
+        state.search.query = query;
+        const data = await _helpers.getJSON(`${_config.API_URL}?search=${query}}`);
+        state.search.results = data.data.recipes.map((recipe)=>{
+            return {
+                recipeID: recipe.id,
+                title: recipe.title,
+                publisher: recipe.publisher,
+                image: recipe.image_url
+            };
+        });
+        state.search.page = 1; //reset the page number when a new search is made
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+};
+const getSearchResultsPage = (page = state.search.page)=>{
+    state.search.page = page;
+    const start = (page - 1) * state.search.resultsPerPage; //show 10 results per page
+    const end = page * state.search.resultsPerPage;
+    return state.search.results.slice(start, end);
+};
+const updateServings = (numberOfServings)=>{
+    state.recipe.ingredients.forEach((el)=>{
+        el.quantity = el.quantity * numberOfServings / state.recipe.servings; //New quantity = oldQuantity * newNumberOfServings/oldNumberOfSavings
+    });
+    state.recipe.servings = numberOfServings;
+};
+const persistBookmarks = ()=>{
+    localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
+const addBookmark = (recipe)=>{
+    //Add bookmark
+    state.bookmarks.push(recipe);
+    //Mark current recipe as bookmarked
+    if (recipe.recipeID === state.recipe.recipeID) state.recipe.bookmarked = true;
+    persistBookmarks();
+};
+const deleteBookmark = (recipeID)=>{
+    const index = state.bookmarks.findIndex((el)=>el.recipeID === recipeID
+    );
+    state.bookmarks.splice(index, 1);
+    if (recipeID === state.recipe.recipeID) state.recipe.bookmarked = false;
+    persistBookmarks();
+};
+const init = ()=>{
+    const storage = localStorage.getItem('bookmarks');
+    if (storage) state.bookmarks = JSON.parse(storage);
+};
+const clearBookmarks = ()=>localStorage.clear('bookmarks')
+//dev function for clearing cookies
+;
+init(); //clearBookmarks() 

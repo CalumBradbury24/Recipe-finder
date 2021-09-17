@@ -3,10 +3,11 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';
+import bookmarksView from './views/bookmarksView.js';
+import addRecipeView from './views/addRecipeView.js';
 
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import { result } from 'lodash';
 
 // https://forkify-api.herokuapp.com/v2
 //Presentation logic in views
@@ -24,8 +25,9 @@ const controlRecipes = async() => {
         if(!id) return;
 
         //0) update results view to mark selected search result with css
-        resultsView.update(model.getSearchResultsPage())
-
+        resultsView.update(model.getSearchResultsPage());
+        bookmarksView.update(model.state.bookmarks);
+        
         //1 Loading recipe
         recipeView.renderSpinner();
         await model.loadRecipe(id);
@@ -79,18 +81,38 @@ const controlServings = (numOfNewServings) => {
 }
 
 const controlAddBookmark = () => {
+    //add/remove bookmark
     if(!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe)
-    else model.deleteBookmark(model.state.recipe);
+    else model.deleteBookmark(model.state.recipe.recipeID);
+
+    //update recipe view
     recipeView.update(model.state.recipe)
+
+    //render bookmarks
+    bookmarksView.render(model.state.bookmarks) //model.state.bookmarks is an array of bookmarked recipes
+}
+
+const controlBookmarks = () => {
+    bookmarksView.render(model.state.bookmarks)
+}
+
+const controlAddRecipe = async(newRecipe) => {
+    try{
+        await model.uploadRecipe(newRecipe)
+    } catch(err){
+        addRecipeView.renderError(err.message)
+    }
 }
 
 //Publisher-Subscriber pattern
 const init = () => { //Add required event listeners
+    bookmarksView.addHandlerRender(controlBookmarks);
     recipeView.addHandlerRender(controlRecipes);
     searchView.addHandlerSearch(controlSearchResults);
     paginationView.addHandlerClick(controlPagination);
     recipeView.addHandlerUpdateServings(controlServings);
     recipeView.addHandlerAddBookmark(controlAddBookmark);
+    addRecipeView.addHandlerUpload(controlAddRecipe);
 }
 
 init();

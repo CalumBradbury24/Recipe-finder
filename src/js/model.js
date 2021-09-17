@@ -1,5 +1,5 @@
 import { API_URL, RESULTS_PER_PAGE } from "./config";
-import { getJSON } from "./helpers";
+import { getJSON, sendJSON } from "./helpers";
 //Model is all about the data in the app
 export const state = {
     recipe: {},
@@ -74,16 +74,63 @@ export const updateServings = (numberOfServings) => {
     state.recipe.servings = numberOfServings;
 }
 
+const persistBookmarks = () => {
+    localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks))
+}
+
 export const addBookmark = (recipe) => {
      //Add bookmark
     state.bookmarks.push(recipe)
-console.log(recipe)
+
     //Mark current recipe as bookmarked
     if(recipe.recipeID === state.recipe.recipeID) state.recipe.bookmarked = true;
+
+    persistBookmarks();
 }
 
-export const deleteBookmark = (id) => {
-    const index = state.bookmarks.findIndex(el => el.recipeID === id)
+export const deleteBookmark = (recipeID) => {
+    const index = state.bookmarks.findIndex(el => el.recipeID === recipeID)
     state.bookmarks.splice(index, 1)
-    console.log(state.bookmarks[index])
-    if(id === state.recipe.recip
+    if(recipeID === state.recipe.recipeID) state.recipe.bookmarked = false;
+
+    persistBookmarks()
+}
+
+const init = () => {
+    const storage = localStorage.getItem('bookmarks');
+    if(storage) state.bookmarks = JSON.parse(storage);
+}
+
+const clearBookmarks = () => localStorage.clear('bookmarks')//dev function for clearing cookies
+
+init();
+//clearBookmarks() 
+
+export const uploadRecipe = async(newRecipe) => {
+    try{
+        const ingredients = Object.entries(newRecipe)
+            .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+            .map(ingr => {
+                const [quantity, unit, description] = ingr[1].replaceAll(' ', '').split(',');
+
+                if(ingr.length !== 3) throw new Error('Wrong ingredient format!') //Function will immediately exit when throwing error
+
+                return { quantity: quantity ? +quantity : null, unit, description }
+        })
+
+        const recipe = {
+            title: newRecipe.title,
+            source_url: newRecipe.sourceUrl,
+            image_url: newRecipe.image,
+            publisher: newRecipe.publisher,
+            cooking_time: newRecipe.cookingTime,
+            servings: newRecipe.servings,
+            ingredients
+        }
+
+            sendJSON(`${API_URL}`)
+    } catch(err){
+        throw err
+    }
+}
+
